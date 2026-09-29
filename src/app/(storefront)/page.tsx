@@ -17,10 +17,16 @@ async function getHomeData() {
   const supabase = await createClient();
 
   const [
+    { data: banners },
     { data: allProducts },
     { data: saleProducts },
     { data: newArrivals },
   ] = await Promise.all([
+    supabase
+      .from('banners')
+      .select('*')
+      .eq('active', true)
+      .order('sort_order'),
     supabase
       .from('products')
       .select(`id, name, slug, price, sale_price, active,
@@ -46,6 +52,7 @@ async function getHomeData() {
   ]);
 
   return {
+    banners: banners || [],
     allProducts: allProducts || [],
     saleProducts: saleProducts || [],
     newArrivals: newArrivals || [],
@@ -53,44 +60,35 @@ async function getHomeData() {
 }
 
 export default async function HomePage() {
-  const { allProducts, saleProducts, newArrivals } = await getHomeData();
+  const { banners, allProducts, saleProducts, newArrivals } = await getHomeData();
 
   return (
     <div className="min-h-screen bg-[#EFEFEF]">
-      {/* Banner Slider */}
-      <BannerSlider />
+      {/* Banner Slider — from database */}
+      <BannerSlider banners={banners as any} />
 
       {/* Category Strip */}
       <CategoryStrip />
 
-      {/* ===== FLASH SALE — Daraz style ===== */}
+      {/* ===== FLASH SALE ===== */}
       {saleProducts.length > 0 && (
-        <section className="max-w-[1200px] mx-auto px-4 mt-3">
+        <section className="max-w-[1200px] mx-auto px-3 sm:px-4 mt-3">
           <div className="bg-white rounded shadow-sm overflow-hidden">
-            {/* Header — orange left border like Daraz */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[#F85606] text-lg">⚡</span>
-                  <h2 className="text-[16px] font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>
-                    Flash Sale
-                  </h2>
-                </div>
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-gray-100">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-[#F85606] text-base sm:text-lg">⚡</span>
+                <h2 className="text-[14px] sm:text-[16px] font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>
+                  Flash Sale
+                </h2>
                 <FlashSaleTimer />
               </div>
-              <Link
-                href="/products?sale=true"
-                className="text-[#F85606] text-[13px] font-semibold hover:underline"
-                style={{ fontFamily: 'Arial, sans-serif' }}
-              >
+              <Link href="/products?sale=true" className="text-[#F85606] text-[12px] sm:text-[13px] font-semibold hover:underline">
                 SHOP ALL →
               </Link>
             </div>
-
-            {/* Horizontal scroll — like Daraz */}
             <div className="flex overflow-x-auto scrollbar-hide">
               {saleProducts.map((product) => (
-                <div key={product.id} className="min-w-[150px] sm:min-w-[180px] md:min-w-[200px] border-r border-gray-100 last:border-r-0 shrink-0">
+                <div key={product.id} className="min-w-[140px] sm:min-w-[180px] md:min-w-[200px] border-r border-gray-100 last:border-r-0 shrink-0">
                   <ProductCard product={product as any} variant="compact" />
                 </div>
               ))}
@@ -101,19 +99,19 @@ export default async function HomePage() {
 
       {/* ===== NEW ARRIVALS ===== */}
       {newArrivals.length > 0 && (
-        <section className="max-w-[1200px] mx-auto px-4 mt-3">
+        <section className="max-w-[1200px] mx-auto px-3 sm:px-4 mt-3">
           <div className="bg-white rounded shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-              <h2 className="text-[16px] font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-gray-100">
+              <h2 className="text-[14px] sm:text-[16px] font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>
                 New Arrivals
               </h2>
-              <Link href="/products?sort=newest" className="text-[#F85606] text-[13px] font-semibold hover:underline" style={{ fontFamily: 'Arial, sans-serif' }}>
+              <Link href="/products?sort=newest" className="text-[#F85606] text-[12px] sm:text-[13px] font-semibold hover:underline">
                 VIEW ALL →
               </Link>
             </div>
             <div className="flex overflow-x-auto scrollbar-hide">
               {newArrivals.map((product) => (
-                <div key={product.id} className="min-w-[150px] sm:min-w-[180px] md:min-w-[200px] border-r border-gray-100 last:border-r-0 shrink-0">
+                <div key={product.id} className="min-w-[140px] sm:min-w-[180px] md:min-w-[200px] border-r border-gray-100 last:border-r-0 shrink-0">
                   <ProductCard product={product as any} variant="compact" />
                 </div>
               ))}
@@ -122,14 +120,14 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* ===== JUST FOR YOU — main grid ===== */}
-      <section className="max-w-[1200px] mx-auto px-4 mt-3 pb-8">
+      {/* ===== JUST FOR YOU ===== */}
+      <section className="max-w-[1200px] mx-auto px-3 sm:px-4 mt-3 pb-8">
         <div className="bg-white rounded shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-100">
-            <h2 className="text-[16px] font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>
+          <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 border-b border-gray-100">
+            <h2 className="text-[14px] sm:text-[16px] font-bold text-gray-900" style={{ fontFamily: 'Arial, sans-serif' }}>
               Just For You
             </h2>
-            <Link href="/products" className="text-[#F85606] text-[13px] font-semibold hover:underline" style={{ fontFamily: 'Arial, sans-serif' }}>
+            <Link href="/products" className="text-[#F85606] text-[12px] sm:text-[13px] font-semibold hover:underline">
               VIEW ALL →
             </Link>
           </div>

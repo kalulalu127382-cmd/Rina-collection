@@ -15,30 +15,28 @@ const CLOTHING_CATEGORIES = [
 
 export function CategoryStrip() {
   return (
-    <section className="max-w-[1200px] mx-auto px-4 mt-3">
+    <section className="max-w-[1200px] mx-auto px-3 sm:px-4 mt-3">
       <div className="bg-white rounded shadow-sm">
-        {/* Section title — Daraz style */}
-        <div className="px-4 py-2.5 border-b border-gray-100">
-          <h2 className="text-[14px] font-bold text-gray-800 uppercase tracking-wide">
+        <div className="px-3 sm:px-4 py-2 sm:py-2.5 border-b border-gray-100">
+          <h2 className="text-[12px] sm:text-[14px] font-bold text-gray-800 uppercase tracking-wide">
             Categories
           </h2>
         </div>
 
-        {/* Categories grid — Daraz uses a row of squares */}
-        <div className="grid grid-cols-5 sm:grid-cols-10 py-3">
+        <div className="grid grid-cols-5 sm:grid-cols-10 py-2 sm:py-3">
           {CLOTHING_CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
               href={cat.href}
-              className="flex flex-col items-center gap-1.5 py-2 hover:bg-orange-50 transition-colors"
+              className="flex flex-col items-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 hover:bg-orange-50 transition-colors"
             >
               <div
-                className="w-[50px] h-[50px] sm:w-[60px] sm:h-[60px] rounded-full flex items-center justify-center text-2xl sm:text-3xl"
+                className="w-[40px] h-[40px] sm:w-[60px] sm:h-[60px] rounded-full flex items-center justify-center text-xl sm:text-3xl"
                 style={{ backgroundColor: cat.color }}
               >
                 {cat.icon}
               </div>
-              <span className="text-[10px] sm:text-[11px] font-medium text-gray-600 text-center leading-tight px-1">
+              <span className="text-[9px] sm:text-[11px] font-medium text-gray-600 text-center leading-tight px-1">
                 {cat.name}
               </span>
             </Link>

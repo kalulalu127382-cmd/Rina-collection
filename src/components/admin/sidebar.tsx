@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard, Package, ShoppingCart, Tag,
-  Settings, LogOut, Menu, X, ChevronRight
+  Settings, LogOut, Menu, X, ChevronRight, Image
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/products', label: 'Products', icon: Package },
+  { href: '/admin/banners', label: 'Banners', icon: Image },
   { href: '/admin/promos', label: 'Promo Codes', icon: Tag },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
