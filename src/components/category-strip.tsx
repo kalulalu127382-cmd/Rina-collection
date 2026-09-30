@@ -10,10 +10,10 @@ const CLOTHING_CATEGORIES = [
   { name: 'Western Wear', image: `${STORAGE_BASE}/western-wear.jpg`, href: '/products?category=western-wear' },
   { name: 'Dresses', image: `${STORAGE_BASE}/dresses.jpg`, href: '/products?category=dresses' },
   { name: 'Tops & Blouses', image: `${STORAGE_BASE}/tops.jpg`, href: '/products?category=tops-blouses' },
-  { name: 'Pants & Bottoms', image: null, emoji: '👖', href: '/products?category=pants-bottoms' },
-  { name: 'Accessories', image: null, emoji: '💍', href: '/products?category=accessories' },
-  { name: 'New In', image: null, emoji: '✨', href: '/products?sort=newest' },
-  { name: 'Sale', image: null, emoji: '🏷️', href: '/products?sale=true' },
+  { name: 'Pants & Bottoms', image: null, initials: 'P', color: '#E3F2FD', textColor: '#1565C0', href: '/products?category=pants-bottoms' },
+  { name: 'Accessories', image: null, initials: 'A', color: '#F3E5F5', textColor: '#7B1FA2', href: '/products?category=accessories' },
+  { name: 'New In', image: null, initials: 'NEW', color: '#FFF3E0', textColor: '#E65100', href: '/products?sort=newest' },
+  { name: 'Sale', image: null, initials: 'SALE', color: '#FFEBEE', textColor: '#C62828', href: '/products?sale=true' },
 ];
 
 export function CategoryStrip() {
@@ -33,7 +33,7 @@ export function CategoryStrip() {
               href={cat.href}
               className="flex flex-col items-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 hover:bg-orange-50 transition-colors group"
             >
-              <div className="w-[48px] h-[48px] sm:w-[68px] sm:h-[68px] rounded-lg overflow-hidden border border-gray-100 bg-gray-50 group-hover:border-orange-300 transition-colors relative">
+              <div className="w-[48px] h-[48px] sm:w-[68px] sm:h-[68px] rounded-lg overflow-hidden border border-gray-100 group-hover:border-orange-300 transition-colors relative">
                 {cat.image ? (
                   <Image
                     src={cat.image}
@@ -43,8 +43,16 @@ export function CategoryStrip() {
                     className="object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-2xl sm:text-3xl">
-                    {cat.emoji}
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{ backgroundColor: cat.color }}
+                  >
+                    <span
+                      className="font-bold text-[10px] sm:text-xs tracking-tight"
+                      style={{ color: cat.textColor }}
+                    >
+                      {cat.initials}
+                    </span>
                   </div>
                 )}
               </div>
