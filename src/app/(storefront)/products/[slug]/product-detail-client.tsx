@@ -54,13 +54,35 @@ export function ProductDetailClient({ product, variants, images }: Props) {
   const [justAdded, setJustAdded] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  // Get unique sizes and colors
+  // Get unique sizes and colors — split comma-separated values into individual options
   const sizes = useMemo(
-    () => [...new Set(variants.map((v) => v.size).filter(Boolean))] as string[],
+    () => {
+      const allSizes: string[] = [];
+      variants.forEach((v) => {
+        if (v.size) {
+          v.size.split(',').forEach((s) => {
+            const trimmed = s.trim();
+            if (trimmed && !allSizes.includes(trimmed)) allSizes.push(trimmed);
+          });
+        }
+      });
+      return allSizes;
+    },
     [variants]
   );
   const colors = useMemo(
-    () => [...new Set(variants.map((v) => v.color).filter(Boolean))] as string[],
+    () => {
+      const allColors: string[] = [];
+      variants.forEach((v) => {
+        if (v.color) {
+          v.color.split(',').forEach((c) => {
+            const trimmed = c.trim();
+            if (trimmed && !allColors.includes(trimmed)) allColors.push(trimmed);
+          });
+        }
+      });
+      return allColors;
+    },
     [variants]
   );
 
@@ -71,13 +93,15 @@ export function ProductDetailClient({ product, variants, images }: Props) {
     colors.length === 1 ? colors[0] : null
   );
 
-  // Find matching variant when size/color changes
+  // Find matching variant when size/color changes — handles comma-separated values
   useMemo(() => {
     if (selectedSize || selectedColor) {
       const match = variants.find(
-        (v) =>
-          (!selectedSize || v.size === selectedSize) &&
-          (!selectedColor || v.color === selectedColor)
+        (v) => {
+          const sizeMatch = !selectedSize || (v.size && v.size.split(',').map(s => s.trim()).includes(selectedSize));
+          const colorMatch = !selectedColor || (v.color && v.color.split(',').map(c => c.trim()).includes(selectedColor));
+          return sizeMatch && colorMatch;
+        }
       );
       setSelectedVariant(match || null);
     }
@@ -181,7 +205,7 @@ export function ProductDetailClient({ product, variants, images }: Props) {
               <div className="flex flex-wrap gap-2">
                 {sizes.map((size) => {
                   const hasStock = variants.some(
-                    (v) => v.size === size && v.stock > 0 && (!selectedColor || v.color === selectedColor)
+                    (v) => v.stock > 0 && v.size && v.size.split(',').map(s => s.trim()).includes(size) && (!selectedColor || (v.color && v.color.split(',').map(c => c.trim()).includes(selectedColor)))
                   );
                   return (
                     <button
@@ -217,7 +241,7 @@ export function ProductDetailClient({ product, variants, images }: Props) {
               <div className="flex flex-wrap gap-2">
                 {colors.map((color) => {
                   const hasStock = variants.some(
-                    (v) => v.color === color && v.stock > 0 && (!selectedSize || v.size === selectedSize)
+                    (v) => v.stock > 0 && v.color && v.color.split(',').map(c => c.trim()).includes(color) && (!selectedSize || (v.size && v.size.split(',').map(s => s.trim()).includes(selectedSize)))
                   );
                   return (
                     <button
