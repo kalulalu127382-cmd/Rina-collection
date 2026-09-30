@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { formatPrice, cn } from '@/lib/utils';
 import {
   ShoppingBag, Upload, CheckCircle, AlertCircle,
-  Tag, X, ChevronLeft, ImageIcon
+  Tag, X, ChevronLeft, ImageIcon, Truck, Zap, Clock
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -46,6 +46,7 @@ export default function CheckoutClient() {
   const [promoLoading, setPromoLoading] = useState(false);
 
   // Payment state
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'half_pay'>('cod');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
@@ -58,7 +59,10 @@ export default function CheckoutClient() {
   // Computed
   const deliveryCharge = 110;
   const discountAmount = promoResult?.valid ? (promoResult.discount || 0) : 0;
+  const halfPayAmount = paymentMethod === 'half_pay' ? Math.ceil(subtotal / 2) : 0;
+  const amountToPay = paymentMethod === 'cod' ? deliveryCharge : halfPayAmount + deliveryCharge;
   const total = Math.max(0, subtotal + deliveryCharge - discountAmount);
+  const remainingOnDelivery = paymentMethod === 'half_pay' ? total - amountToPay + (discountAmount > 0 ? discountAmount : 0) : total - deliveryCharge;
 
   // Auto-apply ref code
   useEffect(() => {
@@ -157,7 +161,7 @@ export default function CheckoutClient() {
       newErrors.phone = 'Enter a valid Nepali phone number';
     if (!address.trim()) newErrors.address = 'Address is required';
     if (!city.trim()) newErrors.city = 'City is required';
-    if (!screenshotFile) newErrors.screenshot = 'Payment screenshot is required';
+    if (paymentMethod === 'half_pay' && !screenshotFile) newErrors.screenshot = 'Payment screenshot is required for Half Pay';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -379,9 +383,81 @@ export default function CheckoutClient() {
           )}
         </section>
 
-        {/* ——— PAYMENT ——— */}
+        {/* ——— PAYMENT METHOD SELECTION ——— */}
         <section className="bg-white rounded-2xl border border-border-light p-5 space-y-5">
-          <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Payment</h2>
+          <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Choose Payment Method</h2>
+
+          <div className="grid gap-3">
+            {/* Option 1: Cash on Delivery */}
+            <button
+              type="button"
+              onClick={() => { setPaymentMethod('cod'); setScreenshotFile(null); setScreenshotPreview(null); }}
+              className={cn(
+                'w-full text-left rounded-xl border-2 p-4 transition-all',
+                paymentMethod === 'cod'
+                  ? 'border-[#F85606] bg-orange-50 shadow-sm'
+                  : 'border-gray-200 hover:border-gray-300'
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center',
+                  paymentMethod === 'cod' ? 'border-[#F85606]' : 'border-gray-300'
+                )}>
+                  {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-[#F85606]" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-[#F85606]" />
+                    <span className="font-bold text-sm text-gray-900">Cash on Delivery</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Pay only <span className="font-bold text-[#F85606]">Rs.110</span> delivery charge now</p>
+                  <div className="flex items-center gap-1.5 mt-2 bg-blue-50 px-2.5 py-1 rounded-lg w-fit">
+                    <Clock className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="text-[11px] font-semibold text-blue-700">Delivery within 7 days</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Option 2: Half Pay + Delivery */}
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('half_pay')}
+              className={cn(
+                'w-full text-left rounded-xl border-2 p-4 transition-all',
+                paymentMethod === 'half_pay'
+                  ? 'border-[#F85606] bg-orange-50 shadow-sm'
+                  : 'border-gray-200 hover:border-gray-300'
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center',
+                  paymentMethod === 'half_pay' ? 'border-[#F85606]' : 'border-gray-300'
+                )}>
+                  {paymentMethod === 'half_pay' && <div className="w-2.5 h-2.5 rounded-full bg-[#F85606]" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#F85606]" />
+                    <span className="font-bold text-sm text-gray-900">Half Pay + Delivery</span>
+                    <span className="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded">FAST</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Pay <span className="font-bold text-[#F85606]">{formatPrice(amountToPay)}</span> now (half price + Rs.110 delivery)</p>
+                  <div className="flex items-center gap-1.5 mt-2 bg-green-50 px-2.5 py-1 rounded-lg w-fit">
+                    <Zap className="w-3.5 h-3.5 text-green-600" />
+                    <span className="text-[11px] font-semibold text-green-700">Priority delivery within 24 hours</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        {/* ——— PAYMENT SUMMARY ——— */}
+        <section className="bg-white rounded-2xl border border-border-light p-5 space-y-5">
+          <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Payment Summary</h2>
 
           {/* Price breakdown */}
           <div className="space-y-2.5">
@@ -390,7 +466,7 @@ export default function CheckoutClient() {
               <span className="font-medium text-text">{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between font-sans text-sm">
-              <span className="text-text-secondary">Delivery</span>
+              <span className="text-text-secondary">Delivery Charge</span>
               <span className="font-medium text-text">{formatPrice(deliveryCharge)}</span>
             </div>
             {discountAmount > 0 && (
@@ -399,85 +475,92 @@ export default function CheckoutClient() {
                 <span className="font-medium text-success">-{formatPrice(discountAmount)}</span>
               </div>
             )}
-            <div className="flex justify-between font-sans text-lg font-bold pt-3 border-t border-border-light">
-              <span>Total</span>
-              <span className="text-primary">{formatPrice(total)}</span>
+            <div className="flex justify-between font-sans text-sm pt-2 border-t border-border-light">
+              <span className="text-text-secondary">Order Total</span>
+              <span className="font-medium text-text">{formatPrice(total)}</span>
+            </div>
+
+            {/* Pay Now vs Pay on Delivery */}
+            <div className="bg-orange-50 rounded-xl p-3 space-y-2">
+              <div className="flex justify-between font-sans text-sm">
+                <span className="font-semibold text-[#F85606]">💰 Pay Now</span>
+                <span className="font-bold text-[#F85606] text-base">{formatPrice(amountToPay)}</span>
+              </div>
+              {paymentMethod === 'half_pay' && (
+                <div className="flex justify-between font-sans text-xs text-gray-500">
+                  <span>Remaining on delivery</span>
+                  <span className="font-medium">{formatPrice(remainingOnDelivery)}</span>
+                </div>
+              )}
+              {paymentMethod === 'cod' && (
+                <div className="flex justify-between font-sans text-xs text-gray-500">
+                  <span>Pay on delivery</span>
+                  <span className="font-medium">{formatPrice(remainingOnDelivery)}</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* QR Code — Prominent payment section */}
-          <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-5 text-center space-y-3">
-            <p className="font-sans text-base font-bold text-gray-900">
-              💳 Pay <span className="text-[#F85606] text-lg">{formatPrice(total)}</span> using QR
-            </p>
-            {qrImageUrl ? (
-              <div className="relative w-52 h-52 mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
-                <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" sizes="208px" />
-              </div>
-            ) : (
-              <div className="w-52 h-52 mx-auto bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
-                <p className="text-xs text-gray-400">QR code not configured yet</p>
-              </div>
-            )}
-            {qrLabel && (
-              <p className="text-xs font-semibold text-gray-600">{qrLabel}</p>
-            )}
-            <p className="text-[11px] text-gray-500">Scan with eSewa, Khalti, or your banking app • Pay the exact amount shown</p>
-          </div>
-
-          {/* Screenshot Upload */}
-          <div className="space-y-2">
-            <label className="font-sans text-sm font-semibold text-text block">
-              Upload Payment Screenshot <span className="text-error">*</span>
-            </label>
-
-            {screenshotPreview ? (
-              <div className="relative w-full max-w-xs">
-                <Image
-                  src={screenshotPreview}
-                  alt="Payment screenshot"
-                  width={300}
-                  height={400}
-                  className="rounded-xl border border-border object-contain"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setScreenshotFile(null);
-                    setScreenshotPreview(null);
-                  }}
-                  className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <label
-                className={cn(
-                  'flex flex-col items-center justify-center w-full h-40 rounded-xl border-2 border-dashed transition-colors cursor-pointer',
-                  errors.screenshot
-                    ? 'border-error/40 bg-error/5'
-                    : 'border-border hover:border-primary/40 hover:bg-primary/5'
+          {/* QR Code + Screenshot — Only for Half Pay */}
+          {paymentMethod === 'half_pay' && (
+            <>
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-5 text-center space-y-3">
+                <p className="font-sans text-base font-bold text-gray-900">
+                  💳 Pay <span className="text-[#F85606] text-lg">{formatPrice(amountToPay)}</span> using QR
+                </p>
+                {qrImageUrl ? (
+                  <div className="relative w-52 h-52 mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+                    <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" sizes="208px" />
+                  </div>
+                ) : (
+                  <div className="w-52 h-52 mx-auto bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    <p className="text-xs text-gray-400">QR code not configured yet</p>
+                  </div>
                 )}
-              >
-                <Upload className="w-8 h-8 text-text-muted mb-2" />
-                <span className="font-sans text-sm font-medium text-text">Tap to upload</span>
-                <span className="font-sans text-xs text-text-muted mt-1">JPG, PNG or WebP (max 5MB)</span>
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            )}
-            {errors.screenshot && (
-              <p className="text-xs text-error font-medium flex items-center gap-1">
-                <AlertCircle className="w-3.5 h-3.5" />
-                {errors.screenshot}
-              </p>
-            )}
-          </div>
+                {qrLabel && (
+                  <p className="text-xs font-semibold text-gray-600">{qrLabel}</p>
+                )}
+                <p className="text-[11px] text-gray-500">Scan with eSewa, Khalti, or your banking app</p>
+              </div>
+
+              {/* Screenshot Upload */}
+              <div className="space-y-2">
+                <label className="font-sans text-sm font-semibold text-text block">
+                  Upload Payment Screenshot <span className="text-error">*</span>
+                </label>
+                {screenshotPreview ? (
+                  <div className="relative w-full max-w-xs">
+                    <Image src={screenshotPreview} alt="Payment screenshot" width={300} height={400} className="rounded-xl border border-border object-contain" />
+                    <button type="button" onClick={() => { setScreenshotFile(null); setScreenshotPreview(null); }} className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className={cn('flex flex-col items-center justify-center w-full h-40 rounded-xl border-2 border-dashed transition-colors cursor-pointer', errors.screenshot ? 'border-error/40 bg-error/5' : 'border-border hover:border-primary/40 hover:bg-primary/5')}>
+                    <Upload className="w-8 h-8 text-text-muted mb-2" />
+                    <span className="font-sans text-sm font-medium text-text">Tap to upload</span>
+                    <span className="font-sans text-xs text-text-muted mt-1">JPG, PNG or WebP (max 5MB)</span>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} className="hidden" />
+                  </label>
+                )}
+                {errors.screenshot && (
+                  <p className="text-xs text-error font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.screenshot}
+                  </p>
+                )}
+              </div>
+            </>
+          )}
+
+          {/* COD info */}
+          {paymentMethod === 'cod' && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+              <CheckCircle className="w-6 h-6 text-green-500 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-green-800">No payment needed now!</p>
+              <p className="text-xs text-green-600 mt-1">Pay Rs.{total} when your order arrives (within 7 days)</p>
+            </div>
+          )}
         </section>
 
         {/* ——— SUBMIT ——— */}
@@ -490,7 +573,7 @@ export default function CheckoutClient() {
           isLoading={submitting}
           disabled={items.length === 0}
         >
-          Place Order — {formatPrice(total)}
+          {paymentMethod === 'cod' ? `Place Order — Cash on Delivery` : `Pay ${formatPrice(amountToPay)} & Place Order`}
         </Button>
       </form>
     </div>
