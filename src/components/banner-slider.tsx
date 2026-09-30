@@ -83,11 +83,18 @@ function TimerBox({ value, label }: { value: string; label: string }) {
 }
 
 export function BannerSlider({ banners: serverBanners }: { banners?: Banner[] }) {
-  // Filter active banners (within schedule)
+  // Filter active banners (within schedule if set)
   const now = Date.now();
   const activeBanners = (serverBanners || []).filter(b => {
+    // If starts_at is set and in the future, hide
     if (b.starts_at && new Date(b.starts_at).getTime() > now) return false;
-    if (b.ends_at && new Date(b.ends_at).getTime() < now) return false;
+    // If ends_at is set and in the past, hide — BUT only if it's meaningfully different from starts_at
+    if (b.ends_at) {
+      const endTime = new Date(b.ends_at).getTime();
+      const startTime = b.starts_at ? new Date(b.starts_at).getTime() : 0;
+      // If end equals start (user set same time by mistake), ignore the schedule
+      if (endTime !== startTime && endTime < now) return false;
+    }
     return true;
   });
 
