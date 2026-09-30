@@ -10,10 +10,6 @@ const CLOTHING_CATEGORIES = [
   { name: 'Western Wear', image: `${STORAGE_BASE}/western-wear.jpg`, href: '/products?category=western-wear' },
   { name: 'Dresses', image: `${STORAGE_BASE}/dresses.jpg`, href: '/products?category=dresses' },
   { name: 'Tops & Blouses', image: `${STORAGE_BASE}/tops.jpg`, href: '/products?category=tops-blouses' },
-  { name: 'Pants & Bottoms', image: null, initials: 'P', color: '#E3F2FD', textColor: '#1565C0', href: '/products?category=pants-bottoms' },
-  { name: 'Accessories', image: null, initials: 'A', color: '#F3E5F5', textColor: '#7B1FA2', href: '/products?category=accessories' },
-  { name: 'New In', image: null, initials: 'NEW', color: '#FFF3E0', textColor: '#E65100', href: '/products?sort=newest' },
-  { name: 'Sale', image: null, initials: 'SALE', color: '#FFEBEE', textColor: '#C62828', href: '/products?sale=true' },
 ];
 
 export function CategoryStrip() {
@@ -26,37 +22,23 @@ export function CategoryStrip() {
           </h2>
         </div>
 
-        <div className="grid grid-cols-5 sm:grid-cols-10 py-2 sm:py-3">
+        <div className="grid grid-cols-3 sm:grid-cols-6 py-3 sm:py-4 gap-2 px-3 sm:px-4">
           {CLOTHING_CATEGORIES.map((cat) => (
             <Link
               key={cat.name}
               href={cat.href}
-              className="flex flex-col items-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 hover:bg-orange-50 transition-colors group"
+              className="flex flex-col items-center gap-1.5 sm:gap-2 py-2 hover:bg-orange-50 rounded-lg transition-colors group"
             >
-              <div className="w-[48px] h-[48px] sm:w-[68px] sm:h-[68px] rounded-lg overflow-hidden border border-gray-100 group-hover:border-orange-300 transition-colors relative">
-                {cat.image ? (
-                  <Image
-                    src={cat.image}
-                    alt={cat.name}
-                    fill
-                    sizes="68px"
-                    className="object-cover"
-                  />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center justify-center"
-                    style={{ backgroundColor: cat.color }}
-                  >
-                    <span
-                      className="font-bold text-[10px] sm:text-xs tracking-tight"
-                      style={{ color: cat.textColor }}
-                    >
-                      {cat.initials}
-                    </span>
-                  </div>
-                )}
+              <div className="w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded-lg overflow-hidden border border-gray-100 group-hover:border-orange-300 transition-all group-hover:shadow-md relative">
+                <Image
+                  src={cat.image}
+                  alt={cat.name}
+                  fill
+                  sizes="80px"
+                  className="object-cover"
+                />
               </div>
-              <span className="text-[9px] sm:text-[11px] font-medium text-gray-600 text-center leading-tight px-1 group-hover:text-[#F85606]">
+              <span className="text-[10px] sm:text-xs font-medium text-gray-600 text-center leading-tight group-hover:text-[#F85606]">
                 {cat.name}
               </span>
             </Link>
