@@ -85,12 +85,7 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
           </div>
         )}
 
-        {/* Free delivery tag — like Daraz */}
-        <div className="mt-1.5">
-          <span className="inline-block bg-[#FFF3E0] text-[#F85606] text-[9px] font-semibold px-1.5 py-0.5 rounded">
-            Free Delivery
-          </span>
-        </div>
+
       </div>
     </Link>
   );

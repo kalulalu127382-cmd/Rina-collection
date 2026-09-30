@@ -18,6 +18,7 @@ const DEFAULT_SETTINGS: SettingsMap = {
   store_address: 'Hetauda, Makwanpur, Nepal',
   delivery_charge: '110',
   free_delivery_min: '2000',
+  show_free_delivery: 'false',
   delivery_areas: 'Nationwide (Nepal)',
   payment_methods: 'eSewa QR, Khalti, Bank Transfer, Cash on Delivery',
   esewa_id: '',
@@ -26,7 +27,7 @@ const DEFAULT_SETTINGS: SettingsMap = {
   bank_account: '',
   qr_image_url: '',
   qr_label: 'Kumari Bank Limited',
-  announcement_text: 'Free Delivery on orders above Rs.2000 | Hetauda & Nationwide',
+  announcement_text: 'Rina Collection | Hetauda & Nationwide Delivery',
   flash_sale_hours: '24',
 };
 
@@ -143,6 +144,25 @@ export default function AdminSettingsPage() {
           <Input label="Free Delivery Min (Rs.)" type="number" value={settings.free_delivery_min} onChange={(e) => update('free_delivery_min', e.target.value)} />
         </div>
         <Input label="Delivery Areas" value={settings.delivery_areas} onChange={(e) => update('delivery_areas', e.target.value)} />
+
+        {/* Free Delivery Toggle */}
+        <div className="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 mt-2">
+          <div>
+            <p className="text-sm font-semibold text-gray-800">Show "Free Delivery" badge</p>
+            <p className="text-xs text-gray-500">Display on product cards when order qualifies</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => update('show_free_delivery', settings.show_free_delivery === 'true' ? 'false' : 'true')}
+            className={`relative w-11 h-6 rounded-full transition-colors ${
+              settings.show_free_delivery === 'true' ? 'bg-[#F85606]' : 'bg-gray-300'
+            }`}
+          >
+            <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+              settings.show_free_delivery === 'true' ? 'translate-x-5' : 'translate-x-0'
+            }`} />
+          </button>
+        </div>
       </Section>
 
       {/* QR Code — Main feature */}
