@@ -49,6 +49,7 @@ export default function CheckoutClient() {
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
+  const [qrLabel, setQrLabel] = useState<string>('');
 
   // Submission state
   const [submitting, setSubmitting] = useState(false);
@@ -69,16 +70,17 @@ export default function CheckoutClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch QR image and delivery charge
+  // Fetch QR image, label, and delivery charge
   useEffect(() => {
     async function fetchSettings() {
       const { data } = await supabase
         .from('store_settings')
         .select('key, value')
-        .in('key', ['qr_image_url', 'delivery_charge']);
+        .in('key', ['qr_image_url', 'qr_label', 'delivery_charge']);
       
       data?.forEach((s) => {
         if (s.key === 'qr_image_url' && s.value) setQrImageUrl(s.value);
+        if (s.key === 'qr_label' && s.value) setQrLabel(s.value);
       });
     }
     fetchSettings();
@@ -403,21 +405,24 @@ export default function CheckoutClient() {
             </div>
           </div>
 
-          {/* QR Code */}
-          <div className="bg-bg-warm rounded-xl p-5 text-center space-y-3">
-            <p className="font-sans text-sm font-semibold text-text">
-              Pay <span className="text-primary">{formatPrice(total)}</span> using QR
+          {/* QR Code — Prominent payment section */}
+          <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-5 text-center space-y-3">
+            <p className="font-sans text-base font-bold text-gray-900">
+              💳 Pay <span className="text-[#F85606] text-lg">{formatPrice(total)}</span> using QR
             </p>
             {qrImageUrl ? (
-              <div className="relative w-48 h-48 mx-auto bg-white rounded-xl overflow-hidden border border-border">
-                <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" />
+              <div className="relative w-52 h-52 mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+                <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" sizes="208px" />
               </div>
             ) : (
-              <div className="w-48 h-48 mx-auto bg-white rounded-xl border border-border flex items-center justify-center">
-                <p className="text-xs text-text-muted">QR code not configured yet</p>
+              <div className="w-52 h-52 mx-auto bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                <p className="text-xs text-gray-400">QR code not configured yet</p>
               </div>
             )}
-            <p className="text-xs text-text-muted">Scan and pay the exact amount shown above</p>
+            {qrLabel && (
+              <p className="text-xs font-semibold text-gray-600">{qrLabel}</p>
+            )}
+            <p className="text-[11px] text-gray-500">Scan with eSewa, Khalti, or your banking app • Pay the exact amount shown</p>
           </div>
 
           {/* Screenshot Upload */}

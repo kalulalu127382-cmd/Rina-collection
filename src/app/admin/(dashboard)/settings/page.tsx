@@ -1,14 +1,14 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
-import { Input, Textarea } from '@/components/ui/input';
-import { Save, Store, Truck, CreditCard, Phone } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Save, Store, Truck, CreditCard, Phone, Upload, X, QrCode } from 'lucide-react';
+import Image from 'next/image';
+import { toast } from 'sonner';
 
-interface SettingsMap {
-  [key: string]: string;
-}
+interface SettingsMap { [key: string]: string; }
 
 const DEFAULT_SETTINGS: SettingsMap = {
   store_name: 'Rina Collection',
@@ -24,6 +24,8 @@ const DEFAULT_SETTINGS: SettingsMap = {
   khalti_id: '',
   bank_name: '',
   bank_account: '',
+  qr_image_url: '',
+  qr_label: 'Kumari Bank Limited',
   announcement_text: 'Free Delivery on orders above Rs.2000 | Hetauda & Nationwide',
   flash_sale_hours: '24',
 };
@@ -33,6 +35,8 @@ export default function AdminSettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploadingQr, setUploadingQr] = useState(false);
+  const qrFileRef = useRef<HTMLInputElement>(null);
   const supabase = createClient();
 
   useEffect(() => { fetchSettings(); }, []);
@@ -42,9 +46,7 @@ export default function AdminSettingsPage() {
     const { data } = await supabase.from('store_settings').select('key, value');
     if (data) {
       const map: SettingsMap = { ...DEFAULT_SETTINGS };
-      data.forEach((row: { key: string; value: string }) => {
-        map[row.key] = row.value;
-      });
+      data.forEach((row: { key: string; value: string }) => { map[row.key] = row.value; });
       setSettings(map);
     }
     setLoading(false);
@@ -53,17 +55,50 @@ export default function AdminSettingsPage() {
   async function handleSave() {
     setSaving(true);
     const upserts = Object.entries(settings).map(([key, value]) => ({
-      key,
-      value,
-      updated_at: new Date().toISOString(),
+      key, value, updated_at: new Date().toISOString(),
     }));
-
     const { error } = await supabase.from('store_settings').upsert(upserts, { onConflict: 'key' });
     setSaving(false);
     if (!error) {
       setSaved(true);
+      toast.success('Settings saved!');
       setTimeout(() => setSaved(false), 3000);
+    } else {
+      toast.error('Failed to save settings');
     }
+  }
+
+  async function handleQrUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingQr(true);
+
+    const ext = file.name.split('.').pop();
+    const fileName = `qr-${Date.now()}.${ext}`;
+
+    // Delete old QR if exists
+    if (settings.qr_image_url) {
+      const oldKey = settings.qr_image_url.split('/payment-qr/')[1];
+      if (oldKey) await supabase.storage.from('payment-qr').remove([oldKey]);
+    }
+
+    const { error } = await supabase.storage.from('payment-qr').upload(fileName, file);
+    if (error) {
+      toast.error('Failed to upload QR code');
+      setUploadingQr(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('payment-qr').getPublicUrl(fileName);
+    update('qr_image_url', urlData.publicUrl);
+    setUploadingQr(false);
+    toast.success('QR code uploaded! Click "Save All" to apply.');
+    if (qrFileRef.current) qrFileRef.current.value = '';
+  }
+
+  function removeQr() {
+    update('qr_image_url', '');
+    toast.success('QR removed. Click "Save All" to apply.');
   }
 
   function update(key: string, value: string) {
@@ -79,7 +114,7 @@ export default function AdminSettingsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your store configuration</p>
+          <p className="text-sm text-gray-500 mt-1">Manage store, delivery, payment & QR codes</p>
         </div>
         <Button variant="primary" rounded onClick={handleSave} isLoading={saving}>
           <Save className="w-4 h-4" />
@@ -91,7 +126,7 @@ export default function AdminSettingsPage() {
       <Section title="Store Information" icon={<Store className="w-4 h-4" />}>
         <Input label="Store Name" value={settings.store_name} onChange={(e) => update('store_name', e.target.value)} />
         <Input label="Tagline" value={settings.store_tagline} onChange={(e) => update('store_tagline', e.target.value)} />
-        <Input label="Announcement Bar Text" value={settings.announcement_text} onChange={(e) => update('announcement_text', e.target.value)} hint="Shows on top of the website" />
+        <Input label="Announcement Bar" value={settings.announcement_text} onChange={(e) => update('announcement_text', e.target.value)} hint="Shows on top of the website" />
       </Section>
 
       {/* Contact */}
@@ -105,12 +140,60 @@ export default function AdminSettingsPage() {
       <Section title="Delivery" icon={<Truck className="w-4 h-4" />}>
         <div className="grid grid-cols-2 gap-4">
           <Input label="Delivery Charge (Rs.)" type="number" value={settings.delivery_charge} onChange={(e) => update('delivery_charge', e.target.value)} />
-          <Input label="Free Delivery Minimum (Rs.)" type="number" value={settings.free_delivery_min} onChange={(e) => update('free_delivery_min', e.target.value)} />
+          <Input label="Free Delivery Min (Rs.)" type="number" value={settings.free_delivery_min} onChange={(e) => update('free_delivery_min', e.target.value)} />
         </div>
         <Input label="Delivery Areas" value={settings.delivery_areas} onChange={(e) => update('delivery_areas', e.target.value)} />
       </Section>
 
-      {/* Payment */}
+      {/* QR Code — Main feature */}
+      <Section title="Payment QR Code" icon={<QrCode className="w-4 h-4" />}>
+        <div className="flex items-start gap-4">
+          {settings.qr_image_url ? (
+            <div className="relative">
+              <div className="w-40 h-40 rounded-xl border-2 border-gray-200 overflow-hidden bg-white relative">
+                <Image src={settings.qr_image_url} alt="Payment QR" fill className="object-contain p-2" sizes="160px" />
+              </div>
+              <button
+                type="button"
+                onClick={removeQr}
+                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <div className="w-40 h-40 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <QrCode className="w-8 h-8 text-gray-300 mx-auto" />
+                <p className="text-[10px] text-gray-400 mt-1">No QR uploaded</p>
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1 space-y-3">
+            <button
+              type="button"
+              onClick={() => qrFileRef.current?.click()}
+              disabled={uploadingQr}
+              className="flex items-center gap-2 px-4 py-2.5 border-2 border-dashed border-gray-300 rounded-xl text-sm font-medium text-gray-600 hover:border-[#F85606] hover:text-[#F85606] transition-colors w-full justify-center"
+            >
+              {uploadingQr ? (
+                <div className="w-4 h-4 border-2 border-[#F85606] border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Upload className="w-4 h-4" />
+              )}
+              {settings.qr_image_url ? 'Change QR Code' : 'Upload QR Code'}
+            </button>
+            <input ref={qrFileRef} type="file" accept="image/*" className="hidden" onChange={handleQrUpload} />
+
+            <Input label="QR Label" value={settings.qr_label} onChange={(e) => update('qr_label', e.target.value)} placeholder="e.g. Kumari Bank Limited" hint="Shows below QR on checkout" />
+
+            <p className="text-[10px] text-gray-400">Upload your bank/eSewa/Khalti QR code. Customers will see this on the checkout page to scan and pay.</p>
+          </div>
+        </div>
+      </Section>
+
+      {/* Payment Methods */}
       <Section title="Payment Methods" icon={<CreditCard className="w-4 h-4" />}>
         <Input label="Accepted Methods" value={settings.payment_methods} onChange={(e) => update('payment_methods', e.target.value)} hint="Comma-separated" />
         <div className="grid grid-cols-2 gap-4">
@@ -123,7 +206,7 @@ export default function AdminSettingsPage() {
 
       {/* Flash Sale */}
       <Section title="Flash Sale" icon={<span className="text-sm">⚡</span>}>
-        <Input label="Flash Sale Duration (hours)" type="number" value={settings.flash_sale_hours} onChange={(e) => update('flash_sale_hours', e.target.value)} hint="How long each flash sale lasts" />
+        <Input label="Flash Sale Duration (hours)" type="number" value={settings.flash_sale_hours} onChange={(e) => update('flash_sale_hours', e.target.value)} />
       </Section>
 
       <div className="pb-8">

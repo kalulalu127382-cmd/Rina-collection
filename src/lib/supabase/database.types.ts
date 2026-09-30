@@ -28,6 +28,10 @@ export type Database = {
           image_url: string | null
           sort_order: number
           active: boolean
+          starts_at: string | null
+          ends_at: string | null
+          show_timer: boolean
+          offer_label: string | null
           created_at: string
           updated_at: string
         }
@@ -44,6 +48,10 @@ export type Database = {
           image_url?: string | null
           sort_order?: number
           active?: boolean
+          starts_at?: string | null
+          ends_at?: string | null
+          show_timer?: boolean
+          offer_label?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -60,6 +68,10 @@ export type Database = {
           image_url?: string | null
           sort_order?: number
           active?: boolean
+          starts_at?: string | null
+          ends_at?: string | null
+          show_timer?: boolean
+          offer_label?: string | null
           created_at?: string
           updated_at?: string
         }

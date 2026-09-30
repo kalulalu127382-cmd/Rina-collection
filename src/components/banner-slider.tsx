@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Banner {
   id: string;
@@ -15,9 +16,12 @@ interface Banner {
   bg_gradient: string | null;
   text_color: string;
   image_url: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  show_timer: boolean;
+  offer_label: string | null;
 }
 
-// Fallback banners if DB is empty
 const FALLBACK_BANNERS: Banner[] = [
   {
     id: '1', title: 'दशैं SALE', subtitle: 'UP TO 50% OFF',
@@ -25,25 +29,69 @@ const FALLBACK_BANNERS: Banner[] = [
     cta_link: '/products?sale=true', bg_color: '#F85606',
     bg_gradient: 'linear-gradient(135deg, #F85606 0%, #FF2D00 50%, #D94400 100%)',
     text_color: 'white', image_url: null,
-  },
-  {
-    id: '2', title: 'NEW ARRIVALS', subtitle: 'Latest Collection 2026',
-    description: 'Kurta Sets · Sarees · Western Wear', cta_text: 'EXPLORE NOW',
-    cta_link: '/products?sort=newest', bg_color: '#1A1A2E',
-    bg_gradient: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%)',
-    text_color: 'white', image_url: null,
-  },
-  {
-    id: '3', title: 'FREE DELIVERY', subtitle: 'Orders Above Rs.2,000',
-    description: 'All across Nepal 🇳🇵', cta_text: 'ORDER NOW',
-    cta_link: '/products', bg_color: '#00A650',
-    bg_gradient: 'linear-gradient(135deg, #00A650 0%, #00C853 50%, #009624 100%)',
-    text_color: 'white', image_url: null,
+    starts_at: null, ends_at: null, show_timer: false, offer_label: null,
   },
 ];
 
+function CountdownTimer({ endsAt }: { endsAt: string }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+
+  useEffect(() => {
+    function calc() {
+      const diff = new Date(endsAt).getTime() - Date.now();
+      if (diff <= 0) return { days: 0, hours: 0, mins: 0, secs: 0 };
+      return {
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        mins: Math.floor((diff % 3600000) / 60000),
+        secs: Math.floor((diff % 60000) / 1000),
+      };
+    }
+    setTimeLeft(calc());
+    const interval = setInterval(() => setTimeLeft(calc()), 1000);
+    return () => clearInterval(interval);
+  }, [endsAt]);
+
+  const pad = (n: number) => n.toString().padStart(2, '0');
+
+  return (
+    <div className="flex items-center gap-1 sm:gap-1.5">
+      {timeLeft.days > 0 && (
+        <>
+          <TimerBox value={pad(timeLeft.days)} label="Days" />
+          <span className="text-white text-lg font-bold opacity-80">:</span>
+        </>
+      )}
+      <TimerBox value={pad(timeLeft.hours)} label="Hrs" />
+      <span className="text-white text-lg font-bold opacity-80">:</span>
+      <TimerBox value={pad(timeLeft.mins)} label="Min" />
+      <span className="text-white text-lg font-bold opacity-80">:</span>
+      <TimerBox value={pad(timeLeft.secs)} label="Sec" />
+    </div>
+  );
+}
+
+function TimerBox({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex flex-col items-center">
+      <div className="bg-black/30 backdrop-blur-sm rounded px-1.5 sm:px-2 py-0.5 sm:py-1 min-w-[28px] sm:min-w-[36px] text-center">
+        <span className="text-white text-sm sm:text-lg font-mono font-bold">{value}</span>
+      </div>
+      <span className="text-white/60 text-[8px] sm:text-[9px] mt-0.5">{label}</span>
+    </div>
+  );
+}
+
 export function BannerSlider({ banners: serverBanners }: { banners?: Banner[] }) {
-  const banners = serverBanners && serverBanners.length > 0 ? serverBanners : FALLBACK_BANNERS;
+  // Filter active banners (within schedule)
+  const now = Date.now();
+  const activeBanners = (serverBanners || []).filter(b => {
+    if (b.starts_at && new Date(b.starts_at).getTime() > now) return false;
+    if (b.ends_at && new Date(b.ends_at).getTime() < now) return false;
+    return true;
+  });
+
+  const banners = activeBanners.length > 0 ? activeBanners : FALLBACK_BANNERS;
   const [current, setCurrent] = useState(0);
 
   const next = useCallback(() => {
@@ -64,31 +112,65 @@ export function BannerSlider({ banners: serverBanners }: { banners?: Banner[] })
   return (
     <div className="relative overflow-hidden">
       <div
-        className="transition-all duration-700 ease-out"
-        style={{ background: banner.bg_gradient || banner.bg_color }}
+        className="transition-all duration-700 ease-out relative"
+        style={{
+          background: banner.image_url ? undefined : (banner.bg_gradient || banner.bg_color),
+        }}
       >
-        <div className="max-w-[1200px] mx-auto px-3 sm:px-6">
-          <div className="flex items-center min-h-[160px] sm:min-h-[220px] md:min-h-[300px] py-4 sm:py-6">
-            <div className="max-w-[600px]" style={{ color: banner.text_color }}>
+        {/* Background image if uploaded */}
+        {banner.image_url && (
+          <div className="absolute inset-0">
+            <Image
+              src={banner.image_url}
+              alt={banner.title}
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-black/30" />
+          </div>
+        )}
+
+        <div className="max-w-[1200px] mx-auto px-3 sm:px-6 relative z-10">
+          <div className="flex items-center min-h-[180px] sm:min-h-[240px] md:min-h-[320px] py-5 sm:py-8">
+            <div className="max-w-[600px]" style={{ color: banner.text_color || 'white' }}>
+              {/* Offer label badge */}
+              {banner.offer_label && (
+                <span className="inline-block bg-yellow-400 text-gray-900 text-[10px] sm:text-xs font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded mb-2 sm:mb-3 animate-pulse">
+                  {banner.offer_label}
+                </span>
+              )}
+
               <h2
-                className="text-2xl sm:text-4xl md:text-6xl font-black leading-none tracking-tight"
+                className="text-2xl sm:text-4xl md:text-6xl font-black leading-none tracking-tight drop-shadow-lg"
                 style={{ fontFamily: 'Arial Black, Arial, sans-serif' }}
               >
                 {banner.title}
               </h2>
+
               {banner.subtitle && (
-                <p className="text-base sm:text-xl md:text-3xl font-bold mt-1 sm:mt-2 opacity-95">
+                <p className="text-base sm:text-xl md:text-3xl font-bold mt-1 sm:mt-2 opacity-95 drop-shadow">
                   {banner.subtitle}
                 </p>
               )}
+
               {banner.description && (
                 <p className="text-xs sm:text-sm md:text-base mt-1 opacity-80">
                   {banner.description}
                 </p>
               )}
+
+              {/* Countdown timer — Daraz style */}
+              {banner.show_timer && banner.ends_at && (
+                <div className="mt-3 sm:mt-4">
+                  <p className="text-[10px] sm:text-xs font-semibold opacity-80 mb-1.5">ENDS IN</p>
+                  <CountdownTimer endsAt={banner.ends_at} />
+                </div>
+              )}
+
               <Link
                 href={banner.cta_link}
-                className="inline-block mt-3 sm:mt-4 px-5 sm:px-8 py-2 sm:py-3 bg-white text-[#F85606] font-bold text-xs sm:text-sm rounded hover:bg-gray-100 transition-colors shadow-md"
+                className="inline-block mt-3 sm:mt-5 px-5 sm:px-8 py-2 sm:py-3 bg-white text-[#F85606] font-bold text-xs sm:text-sm rounded hover:bg-gray-100 transition-colors shadow-lg"
               >
                 {banner.cta_text}
               </Link>
@@ -98,31 +180,37 @@ export function BannerSlider({ banners: serverBanners }: { banners?: Banner[] })
       </div>
 
       {/* Nav arrows */}
-      <button
-        onClick={prev}
-        className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center"
-      >
-        <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-      </button>
-      <button
-        onClick={next}
-        className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center"
-      >
-        <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
-      </button>
+      {banners.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center z-20"
+          >
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center z-20"
+          >
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-700" />
+          </button>
+        </>
+      )}
 
       {/* Dots */}
-      <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {banners.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrent(i)}
-            className={`h-2 rounded-full transition-all ${
-              i === current ? 'w-8 bg-white' : 'w-2 bg-white/50'
-            }`}
-          />
-        ))}
-      </div>
+      {banners.length > 1 && (
+        <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+          {banners.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrent(i)}
+              className={`h-2 rounded-full transition-all ${
+                i === current ? 'w-8 bg-white' : 'w-2 bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
