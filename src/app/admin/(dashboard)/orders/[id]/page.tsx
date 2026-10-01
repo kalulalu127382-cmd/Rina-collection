@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -73,7 +73,8 @@ interface OrderItem {
   line_total: number;
 }
 
-export default function OrderDetailPage({ params }: { params: { id: string } }) {
+export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: orderId } = use(params);
   const router = useRouter();
   const [order, setOrder] = useState<Order | null>(null);
   const [items, setItems] = useState<OrderItem[]>([]);
@@ -94,7 +95,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     const { data: orderData } = await supabase
       .from('orders')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', orderId)
       .single();
 
     if (orderData) {
@@ -112,7 +113,7 @@ export default function OrderDetailPage({ params }: { params: { id: string } }) 
     const { data: itemsData } = await supabase
       .from('order_items')
       .select('*')
-      .eq('order_id', params.id);
+      .eq('order_id', orderId);
 
     setItems((itemsData || []) as OrderItem[]);
     setLoading(false);
