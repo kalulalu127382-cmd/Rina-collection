@@ -213,23 +213,26 @@ export default function CheckoutClient() {
         p_promo_code_id: promoResult?.valid ? promoResult.promo_code_id : undefined,
         p_discount_amount: discountAmount,
         p_total: total,
-        p_payment_screenshot_url: screenshotUrl,
+        p_payment_screenshot_url: screenshotUrl || undefined,
         p_utm_source: utmSource,
         p_utm_medium: utmMedium,
         p_utm_campaign: utmCampaign,
         p_items: orderItems,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC error:', error);
+        throw error;
+      }
 
       const result = data as { success: boolean; order_number: string; tracking_token: string };
 
       // 3. Clear cart and redirect
       clearCart();
       router.push(`/order-confirmed?order=${result.order_number}&token=${result.tracking_token}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Order placement error:', err);
-      toast.error('Failed to place order. Please try again.');
+      toast.error(err?.message || 'Failed to place order. Please try again.');
     } finally {
       setSubmitting(false);
     }
