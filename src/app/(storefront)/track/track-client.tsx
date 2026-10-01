@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { formatPrice, cn } from '@/lib/utils';
 import { Search, Package, CheckCircle, Truck, Clock, XCircle, AlertTriangle } from 'lucide-react';
+import { DeliveryTracker } from '@/components/delivery-tracker';
 
 interface OrderData {
   order_number: string;
@@ -273,6 +274,17 @@ export default function TrackClient() {
                     })}
                   </p>
                 </div>
+
+                {/* 🚚 VISUAL MAP TRACKER */}
+                {STATUS_CONFIG[result.order!.status]?.step > 0 && (
+                  <DeliveryTracker status={
+                    result.order!.status === 'PENDING_VERIFICATION' ? 'pending' :
+                    result.order!.status === 'CONFIRMED' ? 'confirmed' :
+                    result.order!.status === 'PROCESSING' ? 'processing' :
+                    result.order!.status === 'SHIPPED' ? 'shipped' :
+                    result.order!.status === 'DELIVERED' ? 'delivered' : 'pending'
+                  } />
+                )}
 
                 {/* Items */}
                 <div className="bg-white rounded-2xl border border-border-light p-5 space-y-3">
