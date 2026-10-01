@@ -11,7 +11,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   ArrowLeft, CheckCircle, XCircle, Truck, Package,
-  Clock, Eye, AlertTriangle
+  Clock, Eye, AlertTriangle, CreditCard, Banknote, Wallet
 } from 'lucide-react';
 
 const STATUS_FLOW: Record<string, { next: string; label: string; icon: React.ReactNode }[]> = {
@@ -54,6 +54,9 @@ interface Order {
   discount_amount: number;
   total: number;
   status: string;
+  payment_method: string | null;
+  amount_paid: number | null;
+  amount_remaining: number | null;
   payment_screenshot_url: string | null;
   rejection_reason: string | null;
   admin_notes: string | null;
@@ -172,6 +175,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   const actions = STATUS_FLOW[order.status] || [];
+  const amountPaid = order.amount_paid ?? 0;
+  const amountRemaining = order.amount_remaining ?? order.total;
+  const paymentMethodLabel = order.payment_method === 'cod' ? 'Cash on Delivery' : 'Half Pay + Delivery';
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -253,6 +259,72 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
       )}
+
+      {/* ——— PAYMENT BREAKDOWN ——— */}
+      <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl border border-orange-200 p-5 space-y-4">
+        <div className="flex items-center gap-2">
+          <Wallet className="w-5 h-5 text-[#F85606]" />
+          <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Payment Details</h2>
+        </div>
+
+        {/* Payment method badge */}
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white border border-orange-200 text-orange-700">
+            <CreditCard className="w-3.5 h-3.5" />
+            {paymentMethodLabel}
+          </span>
+        </div>
+
+        {/* Amount cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          {/* Total */}
+          <div className="bg-white rounded-xl p-3.5 border border-gray-200 text-center">
+            <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">Total Order</p>
+            <p className="text-lg font-bold text-text mt-1">{formatPrice(order.total)}</p>
+          </div>
+          {/* Paid */}
+          <div className="bg-white rounded-xl p-3.5 border border-green-200 text-center">
+            <p className="text-[10px] font-semibold text-green-600 uppercase tracking-wider flex items-center justify-center gap-1">
+              <CheckCircle className="w-3 h-3" /> Paid
+            </p>
+            <p className="text-lg font-bold text-green-600 mt-1">{formatPrice(amountPaid)}</p>
+          </div>
+          {/* Remaining */}
+          <div className={cn(
+            "bg-white rounded-xl p-3.5 border text-center col-span-2 sm:col-span-1",
+            amountRemaining > 0 ? "border-orange-200" : "border-green-200"
+          )}>
+            <p className={cn(
+              "text-[10px] font-semibold uppercase tracking-wider flex items-center justify-center gap-1",
+              amountRemaining > 0 ? "text-orange-600" : "text-green-600"
+            )}>
+              <Banknote className="w-3 h-3" /> {amountRemaining > 0 ? 'Due on Delivery' : 'Fully Paid'}
+            </p>
+            <p className={cn(
+              "text-lg font-bold mt-1",
+              amountRemaining > 0 ? "text-orange-600" : "text-green-600"
+            )}>
+              {formatPrice(amountRemaining)}
+            </p>
+          </div>
+        </div>
+
+        {/* Progress bar */}
+        {order.total > 0 && (
+          <div className="space-y-1">
+            <div className="flex justify-between text-[10px] font-semibold text-text-muted">
+              <span>Payment Progress</span>
+              <span>{Math.round((amountPaid / order.total) * 100)}%</span>
+            </div>
+            <div className="h-2 bg-white rounded-full overflow-hidden border border-gray-200">
+              <div
+                className="h-full bg-gradient-to-r from-green-400 to-green-500 rounded-full transition-all"
+                style={{ width: `${Math.min(100, (amountPaid / order.total) * 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Customer info */}
       <div className="bg-white rounded-2xl border border-border-light p-5 space-y-3">

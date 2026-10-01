@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { formatPrice, cn } from '@/lib/utils';
 import Link from 'next/link';
 import type { Metadata } from 'next';
+import { Eye, ChevronRight } from 'lucide-react';
 
 export const metadata: Metadata = { title: 'Orders' };
 export const revalidate = 0;
@@ -21,7 +22,7 @@ async function getOrders() {
   const supabase = await createClient();
   const { data } = await supabase
     .from('orders')
-    .select('id, order_number, customer_name, phone, city, total, status, created_at')
+    .select('id, order_number, customer_name, phone, city, total, status, payment_method, amount_paid, amount_remaining, created_at')
     .order('created_at', { ascending: false });
 
   return data || [];
@@ -84,15 +85,21 @@ function OrderRow({ order }: { order: {
   city: string;
   total: number;
   status: string;
+  payment_method: string | null;
+  amount_paid: number | null;
+  amount_remaining: number | null;
   created_at: string;
 } }) {
+  const paid = order.amount_paid ?? 0;
+  const remaining = order.amount_remaining ?? order.total;
+
   return (
     <Link
       href={`/admin/orders/${order.id}`}
-      className="flex items-center justify-between px-5 py-4 hover:bg-bg-warm/30 transition-colors"
+      className="flex items-center justify-between px-5 py-4 hover:bg-bg-warm/30 transition-colors group"
     >
-      <div className="min-w-0">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 flex-wrap">
           <p className="font-sans text-sm font-bold text-text">{order.order_number}</p>
           <span className={cn(
             'inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold',
@@ -104,10 +111,27 @@ function OrderRow({ order }: { order: {
         <p className="font-sans text-xs text-text-muted mt-0.5">
           {order.customer_name} · {order.city} · {new Date(order.created_at).toLocaleDateString()}
         </p>
+        {/* Payment info row */}
+        <div className="flex items-center gap-3 mt-1">
+          <span className="font-sans text-[11px] font-medium text-green-600">
+            Paid: {formatPrice(paid)}
+          </span>
+          {remaining > 0 && (
+            <span className="font-sans text-[11px] font-medium text-orange-500">
+              Due: {formatPrice(remaining)}
+            </span>
+          )}
+        </div>
       </div>
-      <p className="font-sans text-sm font-bold text-text shrink-0 ml-4">
-        {formatPrice(order.total)}
-      </p>
+      <div className="flex items-center gap-3 shrink-0 ml-4">
+        <p className="font-sans text-sm font-bold text-text">
+          {formatPrice(order.total)}
+        </p>
+        {/* Visible "View" icon */}
+        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+          <Eye className="w-4 h-4 text-primary" />
+        </div>
+      </div>
     </Link>
   );
 }

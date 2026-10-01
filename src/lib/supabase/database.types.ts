@@ -144,6 +144,8 @@ export type Database = {
       orders: {
         Row: {
           address: string
+          amount_paid: number
+          amount_remaining: number
           city: string
           created_at: string
           customer_name: string
@@ -151,6 +153,7 @@ export type Database = {
           discount_amount: number
           id: string
           order_number: string | null
+          payment_method: string | null
           payment_screenshot_url: string | null
           phone: string
           promo_code_id: string | null
@@ -167,6 +170,8 @@ export type Database = {
         }
         Insert: {
           address: string
+          amount_paid?: number
+          amount_remaining?: number
           city: string
           created_at?: string
           customer_name: string
@@ -174,6 +179,7 @@ export type Database = {
           discount_amount?: number
           id?: string
           order_number?: string | null
+          payment_method?: string | null
           payment_screenshot_url?: string | null
           phone: string
           promo_code_id?: string | null
@@ -190,6 +196,8 @@ export type Database = {
         }
         Update: {
           address?: string
+          amount_paid?: number
+          amount_remaining?: number
           city?: string
           created_at?: string
           customer_name?: string
@@ -197,6 +205,7 @@ export type Database = {
           discount_amount?: number
           id?: string
           order_number?: string | null
+          payment_method?: string | null
           payment_screenshot_url?: string | null
           phone?: string
           promo_code_id?: string | null
@@ -435,11 +444,14 @@ export type Database = {
       place_order: {
         Args: {
           p_address: string
+          p_amount_paid?: number
+          p_amount_remaining?: number
           p_city: string
           p_customer_name: string
           p_delivery_charge: number
           p_discount_amount?: number
           p_items?: Json
+          p_payment_method?: string
           p_payment_screenshot_url?: string
           p_phone: string
           p_promo_code_id?: string
