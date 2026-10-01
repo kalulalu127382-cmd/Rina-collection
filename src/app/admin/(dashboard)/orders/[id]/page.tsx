@@ -313,14 +313,22 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       {screenshotUrl && (
         <div className="bg-white rounded-2xl border border-border-light p-5 space-y-3">
           <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Payment Screenshot</h2>
-          <div className="relative max-w-xs">
-            <Image
+          <div className="relative max-w-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={screenshotUrl}
               alt="Payment screenshot"
-              width={300}
-              height={400}
-              className="rounded-xl border border-border object-contain"
+              className="rounded-xl border border-border w-full max-h-[500px] object-contain bg-gray-50"
             />
+            <a
+              href={screenshotUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs text-primary font-semibold hover:underline"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              View Full Size
+            </a>
           </div>
         </div>
       )}
