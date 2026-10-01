@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { formatPrice, cn } from '@/lib/utils';
 import {
   ShoppingBag, Upload, CheckCircle, AlertCircle,
-  Tag, X, ChevronLeft, ImageIcon, Zap, Clock
+  Tag, X, ChevronLeft, ImageIcon, Zap, Clock, Truck
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -45,7 +45,8 @@ export default function CheckoutClient() {
   const [promoResult, setPromoResult] = useState<PromoResult | null>(null);
   const [promoLoading, setPromoLoading] = useState(false);
 
-  // Payment state — only half_pay now
+  // Payment state
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'half_pay'>('cod');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
   const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
@@ -55,14 +56,16 @@ export default function CheckoutClient() {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Computed — always half_pay
+  // Computed
   const deliveryCharge = 110;
-  const originalDeliveryCharge = 150; // Marketing: show as discounted from 150
+  const originalDeliveryCharge = 150;
   const discountAmount = promoResult?.valid ? (promoResult.discount || 0) : 0;
-  const halfPayAmount = Math.ceil(subtotal / 2);
-  const amountToPay = halfPayAmount + deliveryCharge;
+  const halfPayAmount = paymentMethod === 'half_pay' ? Math.ceil(subtotal / 2) : 0;
+  const amountToPay = paymentMethod === 'cod' ? deliveryCharge : halfPayAmount + deliveryCharge;
   const total = Math.max(0, subtotal + deliveryCharge - discountAmount);
-  const remainingOnDelivery = total - amountToPay + (discountAmount > 0 ? discountAmount : 0);
+  const remainingOnDelivery = paymentMethod === 'half_pay'
+    ? total - amountToPay + (discountAmount > 0 ? discountAmount : 0)
+    : subtotal - discountAmount;
 
   // Auto-apply ref code
   useEffect(() => {
@@ -74,7 +77,7 @@ export default function CheckoutClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch QR image, label, and delivery charge
+  // Fetch QR image, label
   useEffect(() => {
     async function fetchSettings() {
       const { data } = await supabase
@@ -94,7 +97,6 @@ export default function CheckoutClient() {
   // Redirect if cart is empty
   useEffect(() => {
     if (items.length === 0 && typeof window !== 'undefined') {
-      // Small delay to let hydration complete
       const timer = setTimeout(() => {
         if (useCartStore.getState().items.length === 0) {
           router.push('/');
@@ -136,13 +138,11 @@ export default function CheckoutClient() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate type
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
       toast.error('Please upload a JPG, PNG, or WebP image');
       return;
     }
 
-    // Validate size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image must be under 5MB');
       return;
@@ -217,7 +217,7 @@ export default function CheckoutClient() {
         p_utm_medium: utmMedium,
         p_utm_campaign: utmCampaign,
         p_items: orderItems,
-        p_payment_method: 'half_pay',
+        p_payment_method: paymentMethod,
         p_amount_paid: amountToPay,
         p_amount_remaining: Math.max(0, remainingOnDelivery),
       });
@@ -389,13 +389,81 @@ export default function CheckoutClient() {
           )}
         </section>
 
+        {/* ——— PAYMENT METHOD SELECTION ——— */}
+        <section className="bg-white rounded-2xl border border-border-light p-5 space-y-5">
+          <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Choose Payment Method</h2>
+
+          <div className="grid gap-3">
+            {/* Option 1: Cash on Delivery */}
+            <button
+              type="button"
+              onClick={() => { setPaymentMethod('cod'); setScreenshotFile(null); setScreenshotPreview(null); }}
+              className={cn(
+                'w-full text-left rounded-xl border-2 p-4 transition-all',
+                paymentMethod === 'cod'
+                  ? 'border-[#F85606] bg-orange-50 shadow-sm'
+                  : 'border-gray-200 hover:border-gray-300'
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center',
+                  paymentMethod === 'cod' ? 'border-[#F85606]' : 'border-gray-300'
+                )}>
+                  {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-[#F85606]" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-[#F85606]" />
+                    <span className="font-bold text-sm text-gray-900">Cash on Delivery</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Pay <span className="font-bold text-[#F85606]">Rs.110</span> delivery charge via QR</p>
+                  <div className="flex items-center gap-1.5 mt-2 bg-blue-50 px-2.5 py-1 rounded-lg w-fit">
+                    <Clock className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="text-[11px] font-semibold text-blue-700">Delivery within 7 days</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            {/* Option 2: Half Pay + Delivery */}
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('half_pay')}
+              className={cn(
+                'w-full text-left rounded-xl border-2 p-4 transition-all',
+                paymentMethod === 'half_pay'
+                  ? 'border-[#F85606] bg-orange-50 shadow-sm'
+                  : 'border-gray-200 hover:border-gray-300'
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn(
+                  'w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center',
+                  paymentMethod === 'half_pay' ? 'border-[#F85606]' : 'border-gray-300'
+                )}>
+                  {paymentMethod === 'half_pay' && <div className="w-2.5 h-2.5 rounded-full bg-[#F85606]" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-[#F85606]" />
+                    <span className="font-bold text-sm text-gray-900">Half Pay + Delivery</span>
+                    <span className="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded">FAST</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">Pay <span className="font-bold text-[#F85606]">{formatPrice(halfPayAmount > 0 ? halfPayAmount + deliveryCharge : Math.ceil(subtotal / 2) + deliveryCharge)}</span> now (half price + Rs.110 delivery)</p>
+                  <div className="flex items-center gap-1.5 mt-2 bg-green-50 px-2.5 py-1 rounded-lg w-fit">
+                    <Zap className="w-3.5 h-3.5 text-green-600" />
+                    <span className="text-[11px] font-semibold text-green-700">Priority delivery within 24 hours</span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
         {/* ——— PAYMENT SUMMARY ——— */}
         <section className="bg-white rounded-2xl border border-border-light p-5 space-y-5">
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-[#F85606]" />
-            <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Payment</h2>
-            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded">PRIORITY DELIVERY</span>
-          </div>
+          <h2 className="font-sans text-sm font-bold text-text uppercase tracking-wider">Payment Summary</h2>
 
           {/* Price breakdown */}
           <div className="space-y-2.5">
@@ -424,32 +492,36 @@ export default function CheckoutClient() {
             {/* Pay Now vs Pay on Delivery */}
             <div className="bg-orange-50 rounded-xl p-3 space-y-2">
               <div className="flex justify-between font-sans text-sm">
-                <span className="font-semibold text-[#F85606]">💰 Pay Now (Half + Delivery)</span>
+                <span className="font-semibold text-[#F85606]">💰 Pay Now</span>
                 <span className="font-bold text-[#F85606] text-base">{formatPrice(amountToPay)}</span>
               </div>
               <div className="flex justify-between font-sans text-xs text-gray-500">
-                <span>Remaining on delivery</span>
+                <span>{paymentMethod === 'cod' ? 'Pay on delivery' : 'Remaining on delivery'}</span>
                 <span className="font-medium">{formatPrice(Math.max(0, remainingOnDelivery))}</span>
               </div>
-            </div>
-
-            <div className="flex items-center gap-1.5 bg-green-50 px-2.5 py-1.5 rounded-lg">
-              <Zap className="w-3.5 h-3.5 text-green-600" />
-              <span className="text-[11px] font-semibold text-green-700">Priority delivery within 24 hours</span>
             </div>
           </div>
 
           {/* QR Code */}
           <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-5 text-center space-y-3">
             <p className="font-sans text-base font-bold text-gray-900">
-              💳 Pay <span className="text-[#F85606] text-lg">{formatPrice(amountToPay)}</span> using QR
+              {paymentMethod === 'cod' ? '🚚' : '💳'} Pay <span className="text-[#F85606] text-lg">{formatPrice(amountToPay)}</span> {paymentMethod === 'cod' ? 'Delivery Charge' : 'using QR'}
             </p>
+            {paymentMethod === 'cod' && (
+              <p className="text-[11px] text-gray-500">Pay delivery charge to confirm your order</p>
+            )}
             {qrImageUrl ? (
-              <div className="relative w-52 h-52 mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+              <div className={cn(
+                "relative mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm",
+                paymentMethod === 'cod' ? 'w-44 h-44' : 'w-52 h-52'
+              )}>
                 <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" sizes="208px" />
               </div>
             ) : (
-              <div className="w-52 h-52 mx-auto bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+              <div className={cn(
+                "mx-auto bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center",
+                paymentMethod === 'cod' ? 'w-44 h-44' : 'w-52 h-52'
+              )}>
                 <p className="text-xs text-gray-400">QR code not configured yet</p>
               </div>
             )}
@@ -502,7 +574,7 @@ export default function CheckoutClient() {
           isLoading={submitting}
           disabled={items.length === 0}
         >
-          Pay {formatPrice(amountToPay)} &amp; Place Order
+          {paymentMethod === 'cod' ? `Place Order — Cash on Delivery` : `Pay ${formatPrice(amountToPay)} & Place Order`}
         </Button>
       </form>
     </div>
