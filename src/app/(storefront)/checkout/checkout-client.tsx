@@ -58,11 +58,12 @@ export default function CheckoutClient() {
 
   // Computed
   const deliveryCharge = 110;
+  const originalDeliveryCharge = 150; // Marketing: show as discounted from 150
   const discountAmount = promoResult?.valid ? (promoResult.discount || 0) : 0;
   const halfPayAmount = paymentMethod === 'half_pay' ? Math.ceil(subtotal / 2) : 0;
   const amountToPay = paymentMethod === 'cod' ? deliveryCharge : halfPayAmount + deliveryCharge;
   const total = Math.max(0, subtotal + deliveryCharge - discountAmount);
-  const remainingOnDelivery = paymentMethod === 'half_pay' ? total - amountToPay + (discountAmount > 0 ? discountAmount : 0) : total - deliveryCharge;
+  const remainingOnDelivery = paymentMethod === 'half_pay' ? total - amountToPay + (discountAmount > 0 ? discountAmount : 0) : subtotal - discountAmount;
 
   // Auto-apply ref code
   useEffect(() => {
@@ -161,7 +162,7 @@ export default function CheckoutClient() {
       newErrors.phone = 'Enter a valid Nepali phone number';
     if (!address.trim()) newErrors.address = 'Address is required';
     if (!city.trim()) newErrors.city = 'City is required';
-    if (paymentMethod === 'half_pay' && !screenshotFile) newErrors.screenshot = 'Payment screenshot is required for Half Pay';
+    if (!screenshotFile) newErrors.screenshot = 'Payment screenshot is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -411,7 +412,7 @@ export default function CheckoutClient() {
                     <Truck className="w-4 h-4 text-[#F85606]" />
                     <span className="font-bold text-sm text-gray-900">Cash on Delivery</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">Pay only <span className="font-bold text-[#F85606]">Rs.110</span> delivery charge now</p>
+                  <p className="text-xs text-gray-500 mt-1">Pay <span className="font-bold text-[#F85606]">Rs.110</span> delivery charge via QR</p>
                   <div className="flex items-center gap-1.5 mt-2 bg-blue-50 px-2.5 py-1 rounded-lg w-fit">
                     <Clock className="w-3.5 h-3.5 text-blue-600" />
                     <span className="text-[11px] font-semibold text-blue-700">Delivery within 7 days</span>
@@ -467,7 +468,10 @@ export default function CheckoutClient() {
             </div>
             <div className="flex justify-between font-sans text-sm">
               <span className="text-text-secondary">Delivery Charge</span>
-              <span className="font-medium text-text">{formatPrice(deliveryCharge)}</span>
+              <span className="font-medium text-text">
+                <span className="line-through text-gray-400 text-xs mr-1.5">Rs.{originalDeliveryCharge}</span>
+                <span className="text-green-600">{formatPrice(deliveryCharge)}</span>
+              </span>
             </div>
             {discountAmount > 0 && (
               <div className="flex justify-between font-sans text-sm">
@@ -553,13 +557,61 @@ export default function CheckoutClient() {
             </>
           )}
 
-          {/* COD info */}
+          {/* COD — Show QR for delivery charge payment */}
           {paymentMethod === 'cod' && (
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
-              <CheckCircle className="w-6 h-6 text-green-500 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-green-800">No payment needed now!</p>
-              <p className="text-xs text-green-600 mt-1">Pay Rs.{total} when your order arrives (within 7 days)</p>
-            </div>
+            <>
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-xl p-5 text-center space-y-3">
+                <p className="font-sans text-base font-bold text-gray-900">
+                  🚚 Pay <span className="text-[#F85606] text-lg">{formatPrice(deliveryCharge)}</span> Delivery Charge
+                </p>
+                <p className="text-[11px] text-gray-500">Pay delivery charge to confirm your order</p>
+                {qrImageUrl ? (
+                  <div className="relative w-44 h-44 mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm">
+                    <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" sizes="176px" />
+                  </div>
+                ) : (
+                  <div className="w-44 h-44 mx-auto bg-white rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center">
+                    <p className="text-xs text-gray-400">QR code not configured yet</p>
+                  </div>
+                )}
+                {qrLabel && (
+                  <p className="text-xs font-semibold text-gray-600">{qrLabel}</p>
+                )}
+                <p className="text-[11px] text-gray-500">Scan with eSewa, Khalti, or your banking app</p>
+              </div>
+
+              {/* Screenshot Upload for COD delivery charge */}
+              <div className="space-y-2">
+                <label className="font-sans text-sm font-semibold text-text block">
+                  Upload Payment Screenshot <span className="text-error">*</span>
+                </label>
+                {screenshotPreview ? (
+                  <div className="relative w-full max-w-xs">
+                    <Image src={screenshotPreview} alt="Payment screenshot" width={300} height={400} className="rounded-xl border border-border object-contain" />
+                    <button type="button" onClick={() => { setScreenshotFile(null); setScreenshotPreview(null); }} className="absolute top-2 right-2 w-8 h-8 bg-white/90 rounded-full flex items-center justify-center shadow-md hover:bg-white transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <label className={cn('flex flex-col items-center justify-center w-full h-40 rounded-xl border-2 border-dashed transition-colors cursor-pointer', errors.screenshot ? 'border-error/40 bg-error/5' : 'border-border hover:border-primary/40 hover:bg-primary/5')}>
+                    <Upload className="w-8 h-8 text-text-muted mb-2" />
+                    <span className="font-sans text-sm font-medium text-text">Tap to upload</span>
+                    <span className="font-sans text-xs text-text-muted mt-1">JPG, PNG or WebP (max 5MB)</span>
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} className="hidden" />
+                  </label>
+                )}
+                {errors.screenshot && (
+                  <p className="text-xs text-error font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5" />
+                    {errors.screenshot}
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-center">
+                <p className="text-xs text-blue-700 font-medium">💰 Pay remaining <span className="font-bold">{formatPrice(remainingOnDelivery)}</span> when your order arrives</p>
+              </div>
+            </>
           )}
         </section>
 
