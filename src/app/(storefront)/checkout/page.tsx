@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Checkout',
-  description: 'Complete your order at Rina Collection',
+  description: 'Complete your order at Sasto Bazar',
 };
 
 function CheckoutFallback() {

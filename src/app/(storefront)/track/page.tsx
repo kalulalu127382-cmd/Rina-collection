@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Track Order',
-  description: 'Track your Rina Collection order status',
+  description: 'Track your Sasto Bazar order status',
 };
 
 function TrackFallback() {

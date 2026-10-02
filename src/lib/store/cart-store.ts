@@ -96,7 +96,7 @@ export const useCartStore = create<CartState>()(
       subtotal: () => get().items.reduce((acc, i) => acc + i.price * i.quantity, 0),
     }),
     {
-      name: 'rina-collection-cart',
+      name: 'sasto-bazar-cart',
       partialize: (state) => ({ items: state.items }), // only persist items, not UI state
     }
   )

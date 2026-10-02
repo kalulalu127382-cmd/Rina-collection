@@ -39,7 +39,7 @@ export function Header() {
       {/* ===== TOP BAR ===== */}
       <div className="bg-[#F85606] text-white">
         <div className="max-w-[1200px] mx-auto px-3 sm:px-4 flex items-center justify-between h-[28px] text-[11px]">
-          <span className="opacity-90 truncate">Free Delivery on orders above Rs.2000 | Hetauda & Nationwide</span>
+          <span className="opacity-90 truncate">Free Delivery on orders above Rs.2000 | Biratnagar & Nationwide</span>
           <Link href="/track" className="hidden sm:block hover:underline opacity-90 shrink-0 ml-4">TRACK ORDER</Link>
         </div>
       </div>
@@ -58,7 +58,7 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="shrink-0 mr-1 sm:mr-4">
             <span className="text-white text-xl sm:text-2xl font-bold tracking-tight" style={{ fontFamily: 'Arial, sans-serif' }}>
-              Rina
+              Sasto Bazar
             </span>
           </Link>
 
@@ -68,7 +68,7 @@ export function Header() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search in Rina Collection"
+              placeholder="Search in Sasto Bazar"
               className="flex-1 h-[36px] sm:h-[40px] px-3 sm:px-4 bg-white rounded-l text-[12px] sm:text-[13px] text-gray-700 border-0 outline-none placeholder:text-gray-400"
             />
             <button

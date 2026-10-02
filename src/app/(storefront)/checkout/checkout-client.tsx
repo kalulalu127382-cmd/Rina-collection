@@ -329,7 +329,7 @@ export default function CheckoutClient() {
             <Input
               label="City / Area"
               required
-              placeholder="e.g. Hetauda, Kathmandu"
+              placeholder="e.g. Biratnagar, Kathmandu"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               error={errors.city}

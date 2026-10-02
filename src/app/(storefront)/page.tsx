@@ -7,7 +7,7 @@ import { CategoryStrip } from '@/components/category-strip';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Rina Collection — Nepal\'s Fashion Destination',
+  title: 'Sasto Bazar — Nepal\'s Affordable Fashion Destination',
   description: 'Shop kurtas, sarees, lehengas, western wear and more. Best prices, QR payment, nationwide delivery.',
 };
 

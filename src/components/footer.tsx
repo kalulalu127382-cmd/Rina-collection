@@ -46,7 +46,7 @@ export function Footer() {
             <div className="space-y-2.5 text-sm text-gray-500">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
-                <span>Hetauda, Makwanpur, Nepal</span>
+                <span>Biratnagar, Hatkhola Chowk, Nepal</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 shrink-0 text-gray-400" />
@@ -54,14 +54,14 @@ export function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 shrink-0 text-gray-400" />
-                <span>info@rinacollection.com</span>
+                <span>info@sastobazar.com</span>
               </div>
             </div>
           </div>
 
           {/* About */}
           <div>
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Rina Collection</h3>
+            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider mb-3">Sasto Bazar</h3>
             <p className="text-sm text-gray-500 leading-relaxed">
               Nepal&apos;s trusted online clothing store. Quality ethnic and western wear delivered across Nepal.
             </p>
@@ -88,7 +88,7 @@ export function Footer() {
       <div className="border-t border-gray-200 bg-gray-50">
         <div className="max-w-[1200px] mx-auto px-4 py-4 text-center">
           <p className="text-xs text-gray-400">
-            © {new Date().getFullYear()} Rina Collection. All rights reserved. Nepal 🇳🇵
+            © {new Date().getFullYear()} Sasto Bazar. All rights reserved. Nepal 🇳🇵
           </p>
         </div>
       </div>

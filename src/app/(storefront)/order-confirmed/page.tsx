@@ -5,7 +5,7 @@ import { DeliveryTracker } from '@/components/delivery-tracker';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Order Confirmed — Rina Collection',
+  title: 'Order Confirmed — Sasto Bazar',
 };
 
 interface Props {

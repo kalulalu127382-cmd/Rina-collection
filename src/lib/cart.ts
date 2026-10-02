@@ -9,7 +9,7 @@ export interface CartItem {
   image_url?: string;
 }
 
-const CART_STORAGE_KEY = 'rina_collection_cart';
+const CART_STORAGE_KEY = 'sasto_bazar_cart';
 
 export function getCart(): CartItem[] {
   if (typeof window === 'undefined') return [];

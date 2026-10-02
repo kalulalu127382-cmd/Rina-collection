@@ -4,14 +4,14 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Rina Collection — Curated Fashion, Hetauda Nepal",
-    template: "%s | Rina Collection",
+    default: "Sasto Bazar — Affordable Fashion, Biratnagar Nepal",
+    template: "%s | Sasto Bazar",
   },
-  description: "Discover elegantly curated clothing at Rina Collection, Hetauda Bus Park. Shop kurtas, sarees, and modern fashion with easy QR payment and doorstep delivery across Nepal.",
-  keywords: ["Rina Collection", "Hetauda", "Nepal fashion", "clothing store", "kurta", "saree", "online shopping Nepal"],
+  description: "Discover affordable fashion at Sasto Bazar, Biratnagar Hatkhola Chowk. Shop kurtas, sarees, and modern fashion with easy QR payment and doorstep delivery across Nepal.",
+  keywords: ["Sasto Bazar", "Biratnagar", "Nepal fashion", "clothing store", "kurta", "saree", "online shopping Nepal", "sasto", "affordable"],
   openGraph: {
-    title: "Rina Collection — Curated Fashion, Hetauda Nepal",
-    description: "Elegantly curated clothing with doorstep delivery across Nepal.",
+    title: "Sasto Bazar — Affordable Fashion, Biratnagar Nepal",
+    description: "Affordable fashion with doorstep delivery across Nepal.",
     type: "website",
     locale: "en_NP",
   },

@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center">
           <h1 className="font-serif text-3xl font-bold text-primary">
-            Rina<span className="text-accent">.</span>
+            Sasto<span className="text-accent">.</span>
           </h1>
           <p className="mt-2 font-sans text-sm text-text-muted">Admin Dashboard</p>
         </div>
@@ -66,7 +66,7 @@ export default function AdminLoginPage() {
             label="Email"
             type="email"
             required
-            placeholder="admin@rinacollection.com"
+            placeholder="admin@sastobazar.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />

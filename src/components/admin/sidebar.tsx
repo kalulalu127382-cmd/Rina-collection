@@ -40,7 +40,7 @@ export function AdminSidebar({ userEmail }: { userEmail: string }) {
       <div className="px-5 py-6 border-b border-border-light">
         <Link href="/admin" className="flex items-center gap-2">
           <h1 className="font-serif text-xl font-bold text-primary">
-            Rina<span className="text-accent">.</span>
+            Sasto<span className="text-accent">.</span>
           </h1>
           <span className="badge bg-primary/10 text-primary text-[9px]">Admin</span>
         </Link>

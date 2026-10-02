@@ -11,11 +11,11 @@ import { toast } from 'sonner';
 interface SettingsMap { [key: string]: string; }
 
 const DEFAULT_SETTINGS: SettingsMap = {
-  store_name: 'Rina Collection',
+  store_name: 'Sasto Bazar',
   store_tagline: "Nepal's Fashion Destination",
   store_phone: '+977-XXXXXXXXXX',
-  store_email: 'info@rinacollection.com',
-  store_address: 'Hetauda, Makwanpur, Nepal',
+  store_email: 'info@sastobazar.com',
+  store_address: 'Biratnagar, Hatkhola Chowk, Nepal',
   delivery_charge: '110',
   free_delivery_min: '2000',
   show_free_delivery: 'false',
@@ -27,7 +27,7 @@ const DEFAULT_SETTINGS: SettingsMap = {
   bank_account: '',
   qr_image_url: '',
   qr_label: 'Kumari Bank Limited',
-  announcement_text: 'Rina Collection | Hetauda & Nationwide Delivery',
+  announcement_text: 'Sasto Bazar | Biratnagar & Nationwide Delivery',
   flash_sale_hours: '24',
 };
 
