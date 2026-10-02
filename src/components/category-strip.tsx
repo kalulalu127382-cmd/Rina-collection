@@ -29,13 +29,13 @@ export function CategoryStrip() {
               href={cat.href}
               className="flex flex-col items-center gap-1.5 sm:gap-2 py-2 hover:bg-orange-50 rounded-lg transition-colors group"
             >
-              <div className="w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded-lg overflow-hidden border border-gray-100 group-hover:border-orange-300 transition-all group-hover:shadow-md relative">
-                <Image
+              <div className="w-[60px] h-[60px] sm:w-[80px] sm:h-[80px] rounded-lg overflow-hidden border border-gray-100 group-hover:border-orange-300 transition-all group-hover:shadow-md">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={cat.image}
                   alt={cat.name}
-                  fill
-                  sizes="80px"
-                  className="object-cover"
+                  className="w-full h-full object-cover"
+                  loading="lazy"
                 />
               </div>
               <span className="text-[10px] sm:text-xs font-medium text-gray-600 text-center leading-tight group-hover:text-[#F85606]">

@@ -106,9 +106,10 @@ export default function AdminProductsPage() {
                   product.active ? 'border-gray-200' : 'border-gray-200 opacity-60'
                 )}
               >
-                <div className="w-16 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0 relative">
+                <div className="w-16 h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                   {cover?.image_url ? (
-                    <Image src={cover.image_url} alt={product.name} fill sizes="64px" className="object-cover" />
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={cover.image_url} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
                       <Package className="w-5 h-5 text-gray-300" />
@@ -325,7 +326,8 @@ function ProductForm({ product, onClose }: { product: Product | null; onClose: (
             <div className="flex flex-wrap gap-2">
               {images.map((img, i) => (
                 <div key={i} className={`relative w-20 h-20 rounded-lg overflow-hidden border-2 ${img.is_cover ? 'border-[#F85606]' : 'border-gray-200'}`}>
-                  <Image src={img.url} alt="" fill sizes="80px" className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img.url} alt="" className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
                     <button type="button" onClick={() => removeImage(i)} className="p-1 bg-red-500 rounded-full">
                       <X className="w-3 h-3 text-white" />

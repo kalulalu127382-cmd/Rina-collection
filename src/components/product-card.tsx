@@ -35,12 +35,12 @@ export function ProductCard({ product, variant = 'default' }: ProductCardProps) 
       {/* Image */}
       <div className="relative bg-[#FAFAFA] overflow-hidden aspect-square">
         {imageUrl ? (
-          <Image
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
             src={imageUrl}
             alt={product.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            loading="lazy"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">

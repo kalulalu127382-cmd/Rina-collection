@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
 import { cn } from '@/lib/utils';
 
@@ -55,13 +54,12 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
           {images.map((img, i) => (
             <div key={img.id} className="flex-[0_0_100%] min-w-0">
               <div className="relative aspect-[3/4]">
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={img.image_url}
                   alt={img.alt_text || `${productName} - Image ${i + 1}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover"
-                  priority={i === 0}
+                  className="w-full h-full object-cover"
+                  loading={i === 0 ? 'eager' : 'lazy'}
                 />
               </div>
             </div>
@@ -102,12 +100,12 @@ export function ProductGallery({ images, productName }: ProductGalleryProps) {
                   : 'border-transparent opacity-60 hover:opacity-100'
               )}
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={img.image_url}
                 alt={img.alt_text || ''}
-                fill
-                sizes="64px"
-                className="object-cover"
+                className="w-full h-full object-cover"
+                loading="lazy"
               />
             </button>
           ))}

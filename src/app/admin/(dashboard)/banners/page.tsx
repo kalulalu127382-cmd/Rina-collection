@@ -109,7 +109,8 @@ export default function AdminBannersPage() {
                 style={{ background: banner.image_url ? undefined : (banner.bg_gradient || banner.bg_color || '#F85606') }}
               >
                 {banner.image_url ? (
-                  <Image src={banner.image_url} alt={banner.title} fill className="object-cover" sizes="144px" />
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={banner.image_url} alt={banner.title} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold text-center px-2">{banner.title}</span>
@@ -252,7 +253,8 @@ function BannerForm({ banner, onClose }: { banner: Banner | null; onClose: () =>
           >
             {form.image_url && (
               <>
-                <Image src={form.image_url} alt="Preview" fill className="object-cover" sizes="500px" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={form.image_url} alt="Preview" className="w-full h-full object-cover absolute inset-0" />
                 <div className="absolute inset-0 bg-black/30" />
               </>
             )}
@@ -272,7 +274,8 @@ function BannerForm({ banner, onClose }: { banner: Banner | null; onClose: () =>
             <div className="flex items-center gap-3">
               {form.image_url ? (
                 <div className="relative w-24 h-16 rounded-lg overflow-hidden border">
-                  <Image src={form.image_url} alt="" fill className="object-cover" sizes="96px" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form.image_url} alt="" className="w-full h-full object-cover" />
                   <button type="button" onClick={() => setForm(p => ({ ...p, image_url: '' }))}
                     className="absolute top-0.5 right-0.5 bg-red-500 rounded-full p-0.5">
                     <X className="w-3 h-3 text-white" />

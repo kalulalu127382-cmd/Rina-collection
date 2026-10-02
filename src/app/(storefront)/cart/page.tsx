@@ -41,9 +41,10 @@ export default function CartPage() {
             className="bg-white rounded-2xl border border-border-light p-4 flex gap-4"
           >
             {/* Thumbnail */}
-            <div className="w-20 h-24 rounded-xl bg-bg-warm overflow-hidden shrink-0 relative">
+            <div className="w-20 h-24 rounded-xl bg-bg-warm overflow-hidden shrink-0">
               {item.image_url ? (
-                <Image src={item.image_url} alt={item.name} fill sizes="80px" className="object-cover" />
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <ShoppingBag className="w-6 h-6 text-text-muted/30" />

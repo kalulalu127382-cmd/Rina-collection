@@ -127,12 +127,11 @@ export function BannerSlider({ banners: serverBanners }: { banners?: Banner[] })
         {/* Background image if uploaded */}
         {banner.image_url && (
           <div className="absolute inset-0">
-            <Image
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={banner.image_url}
               alt={banner.title}
-              fill
-              className="object-cover"
-              priority
+              className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/30" />
           </div>

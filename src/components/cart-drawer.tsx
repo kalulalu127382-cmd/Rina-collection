@@ -122,14 +122,13 @@ function CartItemRow({
       className="flex gap-3"
     >
       {/* Thumbnail */}
-      <div className="w-20 h-24 rounded-xl bg-bg-warm overflow-hidden shrink-0 relative">
+      <div className="w-20 h-24 rounded-xl bg-bg-warm overflow-hidden shrink-0">
         {item.image_url ? (
-          <Image
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
             src={item.image_url}
             alt={item.name}
-            fill
-            sizes="80px"
-            className="object-cover"
+            className="w-full h-full object-cover"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
