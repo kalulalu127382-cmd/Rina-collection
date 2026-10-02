@@ -515,7 +515,8 @@ export default function CheckoutClient() {
                 "relative mx-auto bg-white rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm",
                 paymentMethod === 'cod' ? 'w-44 h-44' : 'w-52 h-52'
               )}>
-                <Image src={qrImageUrl} alt="Payment QR Code" fill className="object-contain p-2" sizes="208px" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={qrImageUrl} alt="Payment QR Code" className="w-full h-full object-contain p-2" />
               </div>
             ) : (
               <div className={cn(

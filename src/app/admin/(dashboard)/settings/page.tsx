@@ -79,18 +79,18 @@ export default function AdminSettingsPage() {
 
     // Delete old QR if exists
     if (settings.qr_image_url) {
-      const oldKey = settings.qr_image_url.split('/qr-code/')[1];
-      if (oldKey) await supabase.storage.from('qr-code').remove([oldKey]);
+      const oldKey = settings.qr_image_url.split('/payment-qr/')[1];
+      if (oldKey) await supabase.storage.from('payment-qr').remove([oldKey]);
     }
 
-    const { error } = await supabase.storage.from('qr-code').upload(fileName, file);
+    const { error } = await supabase.storage.from('payment-qr').upload(fileName, file);
     if (error) {
       toast.error('Failed to upload QR code');
       setUploadingQr(false);
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('qr-code').getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from('payment-qr').getPublicUrl(fileName);
     update('qr_image_url', urlData.publicUrl);
     setUploadingQr(false);
     toast.success('QR code uploaded! Click "Save All" to apply.');
@@ -170,8 +170,9 @@ export default function AdminSettingsPage() {
         <div className="flex items-start gap-4">
           {settings.qr_image_url ? (
             <div className="relative">
-              <div className="w-40 h-40 rounded-xl border-2 border-gray-200 overflow-hidden bg-white relative">
-                <Image src={settings.qr_image_url} alt="Payment QR" fill className="object-contain p-2" sizes="160px" />
+              <div className="w-40 h-40 rounded-xl border-2 border-gray-200 overflow-hidden bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={settings.qr_image_url} alt="Payment QR" className="w-full h-full object-contain p-2" />
               </div>
               <button
                 type="button"
